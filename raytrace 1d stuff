@@ -1,0 +1,60 @@
+Basically
+- B represent the ray interval along the minor axis trick. That is I wrapped vertically, with horizontal representing the axis of the largest component, aka the shallowest slope.
+- S represent the recurring grid interval.
+
+SO turning this into a 1d problem I have:
+
+- Range B > Range S
+- B = offset + kS + (S/d)
+- rn = S-(S/dn-1)
+- offsetn = rn-1
+
+- offset0 = 0
+
+
+I'm trying to determine occurrences as the interval drift relative to each other. At 0 they start at the same, but end with a slight difference, which is compounded at each respective recurrence, until they eventually sync back, if they ever do.
+
+- k is the number of time S repeat within B, so basically B/S as an integer division.
+- S/d = the fragment of S needed to add to kS to reach size of B, that at time 0 B = kS + (S/d)
+- r is the reminder of B - (k+1)S, and basically the start of a new recurrence offset.
+
+I need to predict offsetn and (S/dn), let's call the later dsn, and I cannot guarantee than k is fixed for all n.
+
+Now things looks funny, is that offsetn and dsn are dependent on the previous state of each others. Worse there seems to be funny behavior depending on whether ds is above or below 0.5.
+
+I'm not good enough about math to recognize a pattern, or known conjoncture or anything.
+
+B and S are fixed number
+How do I predict offsetn using stateless formula like doing a derivation of offset?
+
+----
+
+I'm not sure this is possible, but it might be.
+
+Let's consider the following:
+
+We know that the offset will be equal to the reminder of the previous iteration. So we can say that offsetn = rn-1.
+
+We can also look at the equation for rn which is rn = S-(S/dn-1). We can rearrange this to get S/dn-1 = S - rn.
+
+Now we can substitute this expression into the equation for B to get B = offset + kS + (S - rn)
+
+We can rearrange this expression to get the following:
+
+offsetn = B - (kS + (S - rn)) 
+
+We can simplify this further by substituting rn-1 for offsetn to get:
+
+offsetn = B - (kS + (S - rn-1)) 
+
+So our final equation for offsetn is:
+
+offsetn = B - (kS + (S - rn-1)) 
+
+---
+
+This equation is stateless and can be used to predict the offset for any value of n.
+
+Can you spot the mistake inthe reasoning above?
+
+The mistake is that I assumed that S/dn-1 = S - rn, when in fact it should be S/dn = S - rn. This is because S/dn is the fragment of S needed to add to kS to reach size of B, not the fragment of S needed to subtract from B.
