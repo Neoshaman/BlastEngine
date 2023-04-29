@@ -1,0 +1,13 @@
+Some javascript to test a theory that hit me while trying to simplify further.
+
+Since the ray and the projection line are perpendicular, and they are reoccurring, they form a regular grid like structure within the windows of vertical wrapping. So I thought maybe the math would be simpler if make those line vertical and horizontal, since it would mean we would be in a situation like the DDA algorithm, which is known. The circle would always be on the horizontal and we are trying to predict when they will hit the vertical. Looking at the image it really looked like we were looking at a ball falling through a grid, so I got the idea to trace the trajectory of the bound of the ball, then I realized. The "bound" tell me WhEN there will be a hit and llow to skip space directly to collision, solving the "how long" before collision part I struggled with! It only solve TRIVIALLY primary hits within the bound before the first wrap. If the ray wraps without colliding anything, it's no longer trivial, but it seems to simplify things a lot.
+
+Basically the algorithm is has follow;
+- do a ray intersection like usual on the first circle:
+- if hit: return hit
+- else:
+-- compute collision bound by finding the perpendicular and the points are radius distance to center on that perpendicular
+-- compute the circle box collision with the two points at radius distance
+-- compute the ray collision box by finding exit and and entry of ray with the collision bounds
+-- really it's a 1d problem, if the x range of the circle collision overlap the ray x range, then return hit
+-- else figure out the wrapping ray occurrence without a for loop. (remaining problem)

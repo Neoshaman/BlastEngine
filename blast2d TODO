@@ -1,0 +1,118 @@
+blast 2d
+
+MATH (8) ->
+- int (13)
+- float (14)
+- xor (80) ?
+- shl (84) ?
+- shr (88) ?
+- sar (93) ?
+- seeded random (98 -106 -110 -114)
+
+STRING (120)
+
+TEXT (144)
+
+INPUT (160)
+
+BANK (206)
+
+FILE (224)
+
+FILE/STREAM (248)
+
+NETWORK (269)
+
+TCP (276)
+
+UDP (289)
+
+DIRECTPLAY (301)
+
+DIRECTSHOW (320)
+
+SOUND/MUSIC (329)
+
+GRAPHICS (352)->
+- Buffer<-
+- Pixel<-
+- viewport
+- flip
+- vwait
+- scanline
+- Color <-
+- GFX mode <-
+- vid mem <-
+- gamma <-
+
+IMAGE (475)
+
+TIME (515)
+
+SYSTEM (525)
+
+DEBUG (542)
+
+****
+
+Blast Math
+
+UTILS
+- lerp
+- remap
+- magnitude
+- magnitude3D
+
+- normalizeX
+- normalizeY
+-> todo: normalizepoint2d
+
+- normalizeX3D
+- normalizeY3D
+- normalizeZ3D
+- normalizepoint3D
+
+- dot2d
+
+- crossx (to test)
+- crossy
+- crossz
+-> todo: crosspoint3d
+
+- vectorprojectx (to test)
+- vectorprojecty
+-> todo: vectorprojectpoint3d
+
+-//reflections (todo)
+
+- Chebyshev
+
+- max
+
+- powerof2step
+
+- checkCubeDirection (empty)
+
+- sphereToCube (issue line 184)
+
+SPHERE FUNCTIONS
+- spherearea
+- spherevolume
+- sherearea2radius
+
+CIRCLE
+- circlearclength
+- deg2rad
+- circlearea
+- circlecircum2radius
+- circlearea2radius
+- circumference
+
+RANDOM UTIL
+- hashseed
+
+REGION SUBDIVISION
+- regionCut
+- regiondraw
+- regionLod
+- regionPaint
