@@ -3,7 +3,7 @@
 function wrapCasting() {
     //--------------------------------------------------------------
     //#region refactoring:
-    const GlobalStruct = {gridScale: 100, circleRadius: 0.25, circleCenter: 0.5}
+    const GlobalStruct = {gridScale: 50, circleRadius: 0.1, circleCenter: 0.5}
     const gridOccurence = canvas.width / GlobalStruct.gridScale
 
     //circleData[] = {offset:i, tca:0, thc:0, normal:null, hit:false}
@@ -101,7 +101,7 @@ function wrapCasting() {
 
     //--------------------------------------------------------------
     //#region intersection
-    let collisionData = {extants:null, raybox:null, circlebox:null, p_dir:null}
+    let collisionData = {extants:null, raybox:null, circlebox:null, p_dir:null, fasthit:null}
     let hitlist = []//circle index, tca, thc, hit
     let fastHitList = []
 
@@ -169,8 +169,8 @@ function wrapCasting() {
         const radius = GlobalStruct.circleRadius
 
         //box y
-        const extant1 = -normal.y * radius + position;
-        const extant2 =  normal.y * radius + position;
+        const extant1 =  normal.y * radius + position;
+        const extant2 = -normal.y * radius + position;
 
         //circle box x
         const hitzone1 = -normal.x * radius + position;
@@ -234,6 +234,29 @@ function wrapCasting() {
     function emptyskipHit(){
         //find intercept at first extants
             //-> done with collision raybox on first hit
+
+            //taking box size
+            const rayboxSize = collisionData.raybox.x2 - collisionData.raybox.x1
+            const circleboxSize = collisionData.circlebox.x2 - collisionData.circlebox.x1
+            //expending the box size together to test against single point
+            const minkowski = rayboxSize + circleboxSize
+            const halfCirclebox = circleboxSize/2
+            //snapping to interger interval with center offset
+            const centerOffset = GlobalStruct.circleCenter
+            const start = collisionData.raybox.x1 -centerOffset -halfCirclebox
+            const end = start + minkowski 
+            //ceil the start and floor the end to get overlap in integer difference
+            // const overlap = floor(end) - ceil(start)
+            const overlap = ceil(end) - ceil(start)
+            
+            //return start coordinate, overlap
+            collisionData.fasthit = {start: start, end: end}
+            //collisionData.fasthit = collisionData.raybox.x1
+            //...
+            // debugLog(minkowski)
+           
+
+            //------------------------------
             //check overlap with circle boxes
                 //integer check?
                 //how many box ovelap?
@@ -246,7 +269,25 @@ function wrapCasting() {
                         //return circle list for registration
     }
 
-    function fallThroughHit(){}
+    function fallThroughHit(){
+        //----
+        const rayboxSize = collisionData.raybox.x2 - collisionData.raybox.x1
+        const gap = rayData.length - rayboxSize
+        
+        //marching method
+            //find when 1 < minkowski
+
+            //while minkowski < 1 
+            //(if bigger than one, it cover a full cell,
+            // overlap is inevitable)
+                //current + gap * iteration
+                    // should be a distance compute
+                    // to get the next overlap
+                        //iteration = distance /gap ??
+                            //delta from two gap ???
+                //test overlap
+                //increase iteration
+    }
 
     function FastHit(){
         firstHit()
@@ -262,7 +303,7 @@ function wrapCasting() {
         allHit()
 
         //new method
-        // FastHit()       
+        FastHit()       
     }
 
     //#endregion
@@ -277,8 +318,14 @@ function wrapCasting() {
     
     function drawRay(){
         color('salmon')
+        const scale = GlobalStruct.gridScale
         const inter = horizontalIntercept(mice,1)
-        line(inter * GlobalStruct.gridScale, 1 * 100, 0, 0)
+        line(inter *scale, 1 *scale, 0, 0)
+        
+        //debug
+        color('magenta')
+        vertical(inter *scale)
+
     }
 
     function drawCircle(offset)
@@ -422,9 +469,9 @@ function wrapCasting() {
         const y1 = collisionData.extants.y1
         const y2 = collisionData.extants.y2
 
-        verticalLine(x1 *scale, y1 *scale, y2 *scale)
-        verticalLine(x2 *scale, y1 *scale, y2 *scale)
-        rectangle(x1*scale,y1*scale, x2*scale,y2*scale)
+        // verticalLine(x1 *scale, y1 *scale, y2 *scale)
+        // verticalLine(x2 *scale, y1 *scale, y2 *scale)
+        rectangle(x1*scale,y1*scale, x2*scale,y2*scale,false)
     }
 
     function drawRayBox(offset){
@@ -435,9 +482,9 @@ function wrapCasting() {
         const y1 = collisionData.extants.y1
         const y2 = collisionData.extants.y2
 
-        verticalLine(x1 *scale, y1 *scale, y2 *scale)
-        verticalLine(x2 *scale, y1 *scale, y2 *scale)
-        rectangle(x1*scale,y1*scale, x2*scale,y2*scale)
+        // verticalLine(x1 *scale, y1 *scale, y2 *scale)
+        // verticalLine(x2 *scale, y1 *scale, y2 *scale)
+        rectangle(x1*scale,y1*scale, x2*scale,y2*scale, false)
     }
 
     function drawBoxes(){
@@ -467,8 +514,146 @@ function wrapCasting() {
     }
 
     function drawFastHits(){
+        const scale = GlobalStruct.gridScale
+
+        const start = collisionData.fasthit.start
+        const end   = collisionData.fasthit.end
+
+        // const intEnd = floor(end)
+        const intEnd   = ceil(end)
+        const intStart = ceil(start)
         //loop fastHitList
             //draw markers
+        
+        const overlap = intEnd - intStart
+
+        //taking box size
+        const rayboxSize    = collisionData.raybox.x2 - collisionData.raybox.x1
+        const circleboxSize = collisionData.circlebox.x2 - collisionData.circlebox.x1
+        //expending the box size together to test against single point
+        const minkowski     = rayboxSize + circleboxSize
+        const halfCirclebox = circleboxSize/2
+
+        const marker1 = {x:intStart*scale,y:50}
+        const marker2 = {x:intEnd*scale,y:50}
+        const marker3 = {x:start*scale,y:75}
+        const marker4 = {x:end*scale,y:75}
+
+        
+
+        color("black")
+        vertical(start *scale)
+        vertical(end   *scale)
+
+        color("red")
+        horizontalLine(50, intStart*scale, intEnd *scale )
+
+        line(marker1.x,marker1.y, marker3.x,marker3.y)
+        line(marker2.x, marker2.y, marker4.x,marker4.y)
+
+        drawMarker(marker1)
+        drawMarker(marker2)
+
+        drawMarker(marker3)
+        drawMarker(marker4)
+
+        text(100,200,end)
+        text(10,200,intEnd)
+
+        text(100,210,start)
+        text(10,210,intStart)
+
+        text(10,220,overlap)
+
+        text(10,240,"ray: "+rayData.length)
+        text(10,250,"raybox: "+rayboxSize)
+        text(10,260,"minkowski: "+minkowski)
+
+        // const rayboxSize = collisionData.raybox.x2 - collisionData.raybox.x1
+        const gap = collisionData.raybox.x2 + rayData.length - rayboxSize
+        //verticalLine(gap *scale,0,100)
+
+        //----
+        //minkowski box
+        color("pink")
+        //draw the minkowski as a slab
+        //draw the minkowski as interger offset
+
+        //compute start and end of minkowski box
+        const minkowski_start = collisionData.raybox.x1 - halfCirclebox
+        const minkowski_end   = collisionData.raybox.x2 + halfCirclebox
+        const minkowski_size  = minkowski_end - minkowski_start
+        
+        //draw minkowski line
+        horizontalLine(60, minkowski_start*scale, minkowski_end *scale )
+
+        //find next offset
+        const next = minkowski_end + rayData.length - minkowski_size +halfCirclebox
+        //draw next offset
+        verticalLine(next *scale,0,100)
+
+        //minkowski delta (snap to integer)
+        //if minkowski < 1 (if bigger always overlap circle box)
+        if (minkowski_size < 1){
+            color("green")
+
+            //this delta seems wrong
+
+            //I want the end of minkowski at 0
+            //vs the end of minkowski a 1
+            //that is 0+1 length
+
+            //0 = min start (gap before minkowski)
+            //+ minkowski size
+            const delta_start   = (minkowski_start + minkowski_size)%1
+            //1 = gap after minkowski + gap avant minkowski
+            //+ minkowski (basically the whole length)
+            const delta_end     = (minkowski_end + rayData.length)%1
+            const delta         = (delta_end - delta_start)
+
+            // const delta_start   = (minkowski_start - 0.5)%1
+            // const delta_end     = (minkowski_end   - 0.5)%1
+            // const delta 
+
+
+            const sign = sgn(delta)
+
+            // distance to next circle box //if 0 no hit
+            const distance = (rayData.length-minkowski_size)/abs(delta) 
+            //(how many time in integer
+            //there is delta (aka space to cross))
+            text(10,280,"delta: "+delta + " s: "+1/delta)
+            text(10,290,"sign: " +sign)
+            text(10,300,"distance delta: "+distance)
+
+            //every delta, the ray box get closer
+            //to the next relevant circle box
+
+            //actually not raydata length, just gap 1+2
+            //aka length - minkowski size
+            const next_hit = minkowski_end+floor(distance * (rayData.length-minkowski_size))//+0.5 -1
+            text(10,310,"next: "+next_hit)
+            text(10,320,"length: "+rayData.length)
+
+            //draw next hit
+            verticalLine(next_hit *scale,0,1 *scale)
+
+            //next hit should be delta * times in distance
+
+            //draw raylength filling delta
+            
+            //---------
+            sign > 0 ? color("magenta") : color("aquamarine")
+            const inter = horizontalIntercept(mice,1)
+            const markerx = {x:inter*scale, y:100}
+            drawMarker(markerx)
+            //----------
+        }
+        // const gap2 = collisionData.raybox.x2 + rayData.length - rayboxSize
+        // verticalLine(gap2 *scale,0,100)
+
+        //rectangle(x1*scale,y1*scale, x2*scale,y2*scale, false)
+
     }
 
     function drawAllHits(){
@@ -483,6 +668,7 @@ function wrapCasting() {
         drawBoxes()
         drawRayRow()
         drawAllHits()
+        drawFastHits()
     }
     //#endregion
 
